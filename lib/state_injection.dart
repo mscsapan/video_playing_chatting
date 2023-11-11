@@ -1,23 +1,31 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart';
 
+import 'data/data_provider/remote_data_source.dart';
+import 'logic/bloc/video_bloc.dart';
+import 'logic/repository/video_repository.dart';
+
 class StateInjector {
   static final repositoryProviders = <RepositoryProvider>[
     RepositoryProvider<Client>(
       create: (context) => Client(),
     ),
-
-    // RepositoryProvider<LocalDataSource>(
-    //   create: (context) => LocalDataSourceImpl(
-    //     sharedPreferences: context.read(),
-    //   ),
-    // ),
+    RepositoryProvider<RemoteDataSource>(
+      create: (context) => RemoteDataSourceImpl(
+        client: context.read(),
+      ),
+    ),
+    RepositoryProvider<VideoRepository>(
+      create: (context) => VideoRepositoryImpl(
+        remoteDataSource: context.read(),
+      ),
+    ),
   ];
   static final blocProviders = <BlocProvider>[
-    // BlocProvider<LoginBloc>(
-    //   create: (context) => LoginBloc(
-    //     authRepository: context.read(),
-    //   ),
-    // ),
+    BlocProvider<VideoBloc>(
+      create: (context) => VideoBloc(
+        videoRepository: context.read(),
+      ),
+    ),
   ];
 }
