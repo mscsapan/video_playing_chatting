@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/video_model.dart';
 import '../../logic/bloc/video_bloc.dart';
 import '../utils/constraints.dart';
+import '../utils/utils.dart';
 import '../widgets/custom_image.dart';
 import '../widgets/custom_text.dart';
 import '../widgets/fetch_error_text.dart';
@@ -33,29 +34,18 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Callback when the user scrolls
   void _onScroll() {
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
 
-    // Load more data when the user is near the end of the list
     if (maxScroll - currentScroll <= 200.0) {
       context.read<VideoBloc>().add(VideoEventGetAllVideo());
-
-      // Scroll to the last item
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final videoBloc = context.read<VideoBloc>();
-    if (videoBloc.videoModel == null) {
-      print('recall because of video-model is NULL');
-      //videoBloc.add(VideoEventGetAllVideo());
-    } else {
-      print('video-model is NOT-NULL');
-    }
     return Scaffold(
       appBar: AppBar(
         title: const CustomText(text: 'Trending Video', color: whiteColor),
@@ -64,8 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: BlocBuilder<VideoBloc, VideoState>(
         builder: (context, state) {
-          if (state is VideoStateLoading) {
-            //return const LoadingWidget();
+          if (state is VideoStateLoading && videoBloc.initialOffset == 1) {
+            return const LoadingWidget();
           } else if (state is VideoStateError) {
             if (state.statusCode == 503) {
               if (videoBloc.videoModel != null) {
@@ -77,17 +67,12 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             }
             return FetchErrorText(text: state.message);
-          } else if (state is VideoStateLoaded) {
+          } else if (state is VideoStateLoaded ||
+              state is VideoStateLoadedMore) {
             return VideoLoadedWidget(
                 videoModel: videoBloc.videoModel!,
                 scrollController: _scrollController);
-          } else if (state is VideoStateLoadedMore) {
-            print('length ${state.videoModel.results!.length}');
-            return VideoLoadedWidget(
-                videoModel: videoBloc.videoModel!,
-                scrollController: _scrollController);
-          }
-          if (videoBloc.videoModel != null) {
+          } else if (videoBloc.videoModel != null) {
             return VideoLoadedWidget(
                 videoModel: videoBloc.videoModel!,
                 scrollController: _scrollController);
@@ -110,28 +95,48 @@ class VideoLoadedWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print('totalLength ${videoModel.results!.length}');
-    return ListView.builder(
-      controller: scrollController,
-      itemCount: videoModel.results!.length,
-      physics: const ClampingScrollPhysics(),
-      itemBuilder: (context, index) {
-        final title = videoModel.results![index];
-        return Column(
-          children: [
-            CustomImage(path: title.channelImage),
-            Row(
-              children: [
-                CustomText(
-                  text: title.id.toString(),
-                  fontSize: 20.0,
-                  color: redColor,
-                ),
-                Flexible(child: CustomText(text: title.title)),
-              ],
-            ),
-          ],
-        );
-      },
+    final videoBloc = context.read<VideoBloc>();
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            controller: scrollController,
+            itemCount: videoModel.results!.length,
+            physics: const ClampingScrollPhysics(),
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              final title = videoModel.results![index];
+              return Column(
+                children: [
+                  CustomImage(path: title.thumbnail),
+                  Row(
+                    children: [
+                      CustomText(
+                        text: title.id.toString(),
+                        fontSize: 20.0,
+                        color: redColor,
+                      ),
+                      Flexible(
+                          child: CustomText(
+                              text: Utils.convertToBangla(title.title))),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        BlocBuilder<VideoBloc, VideoState>(
+          builder: (context, state) {
+            if (state is VideoStateLoading) {
+              if (videoBloc.initialOffset != 1) {
+                return const LoadingWidget(color: redColor);
+              }
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ],
     );
   }
 }

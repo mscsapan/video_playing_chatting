@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +22,10 @@ class Utils {
 
     // return DateFormat.MMMEd().format(_dateTime.toLocal());
     return DateFormat.yMMMMd().format(_dateTime.toLocal());
+  }
+
+  static String convertToBangla(String text) {
+    return utf8.decode(text.runes.toList());
   }
 
   static String dataAndTimeFormat(String time) {
