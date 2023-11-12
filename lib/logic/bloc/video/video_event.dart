@@ -1,4 +1,4 @@
-part of 'video_bloc.dart';
+import 'package:equatable/equatable.dart';
 
 abstract class VideoEvent extends Equatable {
   const VideoEvent();

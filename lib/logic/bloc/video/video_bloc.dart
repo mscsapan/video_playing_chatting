@@ -1,10 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/models/video_model.dart';
-import '../repository/video_repository.dart';
-
-part 'video_event.dart';
+import '../../../data/models/video_model.dart';
+import '../../repository/video_repository.dart';
+import 'video_event.dart';
 
 part 'video_state.dart';
 

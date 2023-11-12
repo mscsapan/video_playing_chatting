@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/models/video_model.dart';
-import '../../logic/bloc/video_bloc.dart';
-import '../utils/constraints.dart';
-import '../utils/utils.dart';
-import '../widgets/custom_image.dart';
-import '../widgets/custom_text.dart';
-import '../widgets/fetch_error_text.dart';
-import '../widgets/loading_widget.dart';
+import '../../../data/models/video_model.dart';
+import '../../../logic/bloc/video/video_bloc.dart';
+import '../../../logic/bloc/video/video_event.dart';
+import '../../routes/route_names.dart';
+import '../../utils/constraints.dart';
+import '../../utils/utils.dart';
+import '../../widgets/custom_image.dart';
+import '../../widgets/custom_text.dart';
+import '../../widgets/fetch_error_text.dart';
+import '../../widgets/loading_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -96,47 +98,60 @@ class VideoLoadedWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     print('totalLength ${videoModel.results!.length}');
     final videoBloc = context.read<VideoBloc>();
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            controller: scrollController,
-            itemCount: videoModel.results!.length,
-            physics: const ClampingScrollPhysics(),
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final title = videoModel.results![index];
-              return Column(
-                children: [
-                  CustomImage(path: title.thumbnail),
-                  Row(
-                    children: [
-                      CustomText(
-                        text: title.id.toString(),
-                        fontSize: 20.0,
-                        color: redColor,
-                      ),
-                      Flexible(
-                          child: CustomText(
-                              text: Utils.convertToBangla(title.title))),
-                    ],
+    return Container(
+      margin: Utils.symmetric(h: 14.0),
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              controller: scrollController,
+              itemCount: videoModel.results!.length,
+              physics: const ClampingScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                final title = videoModel.results![index];
+                return Padding(
+                  padding: Utils.symmetric(h: 0.0, v: 10.0),
+                  child: GestureDetector(
+                    onTap: () => Navigator.pushNamed(
+                      context,
+                      RouteNames.videoPlayScreen,
+                      arguments: title,
+                    ),
+                    child: Column(
+                      children: [
+                        CustomImage(path: title.thumbnail),
+                        Row(
+                          children: [
+                            CustomText(
+                              text: title.id.toString(),
+                              fontSize: 20.0,
+                              color: redColor,
+                            ),
+                            Flexible(
+                                child: CustomText(
+                                    text: Utils.convertToBangla(title.title))),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              );
+                );
+              },
+            ),
+          ),
+          BlocBuilder<VideoBloc, VideoState>(
+            builder: (context, state) {
+              if (state is VideoStateLoading) {
+                if (videoBloc.initialOffset != 1) {
+                  return const LoadingWidget(color: redColor);
+                }
+              }
+              return const SizedBox.shrink();
             },
           ),
-        ),
-        BlocBuilder<VideoBloc, VideoState>(
-          builder: (context, state) {
-            if (state is VideoStateLoading) {
-              if (videoBloc.initialOffset != 1) {
-                return const LoadingWidget(color: redColor);
-              }
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
