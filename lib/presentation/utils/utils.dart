@@ -12,43 +12,14 @@ class Utils {
 
   static final _initialTime = TimeOfDay.now();
 
-  static String formatDate(var date) {
-    late DateTime _dateTime;
-    if (date is String) {
-      _dateTime = DateTime.parse(date);
-    } else {
-      _dateTime = date;
-    }
-
-    // return DateFormat.MMMEd().format(_dateTime.toLocal());
-    return DateFormat.yMMMMd().format(_dateTime.toLocal());
-  }
-
   static String convertToBangla(String text) {
     return utf8.decode(text.runes.toList());
   }
 
-  static String dataAndTimeFormat(String time) {
-    final DateTime dateTime = DateTime.parse(time);
-    final DateFormat formatter = DateFormat('h:mm a - MMM d, y');
-    return formatter.format(dateTime);
-  }
+  static String convertTime(String time) {
+    DateTime dateTime = DateTime.parse(time);
 
-  static String scheduleTimeFormat(String input) {
-    final DateFormat inputFormat = DateFormat("dd-MM-yyyy");
-    final DateFormat outputFormat = DateFormat("dd MMM, y");
-    final DateTime dateTime = inputFormat.parse(input);
-    return outputFormat.format(dateTime);
-  }
-
-  static String timeAgo(var date) {
-    late DateTime _dateTime;
-    if (date is String) {
-      _dateTime = DateTime.now();
-    } else {
-      _dateTime = date;
-    }
-    return DateFormat.jm().format(_dateTime);
+    return DateFormat('dd MMM, yyyy').format(dateTime);
   }
 
   static String convertToAgo(String? time) {
@@ -151,15 +122,16 @@ class Utils {
     showCustomDialog(
       context,
       child: Container(
-        height: 120,
+        height: 100.0,
         padding: const EdgeInsets.all(20),
-        child: const Center(
+        child: Center(
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            //mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: blueColor),
-              SizedBox(width: 15),
-              Text('Please wait a moment')
+              const CircularProgressIndicator(color: blueColor),
+              Utils.horizontalSpace(20.0),
+              const CustomText(text: 'Loading more..')
             ],
           ),
         ),
